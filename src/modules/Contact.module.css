@@ -1,0 +1,25 @@
+.text {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 900;
+    text-align: center;
+    font-size: 1.5em;
+    display: flex;
+    max-width: 100%;
+    flex-direction: column;
+}
+
+.textIn{
+    margin-top: 2em;
+
+}
+.textIn2{
+    margin-top: 2em;
+    font-size: 0.8em;
+    font-weight: normal;
+}
+
+
+
+
+
+
