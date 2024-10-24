@@ -47,6 +47,8 @@
     margin: 1em;
     display: flex;
     flex-wrap: wrap;
+    flex: 1;
+    justify-content: center;
   }
   .rankHandler {
     max-width: 1200px;
@@ -143,8 +145,6 @@
     font-size: 1.5em;
     font-weight: bold;
     box-shadow: 2px 2px 2px 2px rgba(1, 1, 1, 0.235);
-
-    
   }
   .inputContainer {
     margin: 1em;
@@ -228,7 +228,7 @@
   }
   .settingDisablePic:hover {
     transform: scale(1.1);
-    transition: .3s ease;
+    transition: 0.3s ease;
     opacity: 50%;
   }
 
@@ -251,7 +251,6 @@
     padding: 10px;
     font-size: 2em;
     font-weight: bold;
-
   }
   .settingOptionsButton {
     display: flex;
@@ -270,19 +269,18 @@
     border-radius: 10px;
     height: 50px;
   }
-  .settingDelete:hover{
+  .settingDelete:hover {
     transform: scale(1.05);
-    transition: .3s ease;
+    transition: 0.3s ease;
     opacity: 70%;
   }
-  .settingColor{
+  .settingColor {
     width: 50px;
     height: 50px;
     border-radius: 10px;
     margin-left: 30px;
     cursor: pointer;
     border: 2px solid black;
-    
   }
   .settingColor::-webkit-color-swatch {
     border: none;
@@ -292,8 +290,56 @@
     border: none;
     padding: 0;
   }
-  }
-
+}
+.inputMultiContainer {
+  margin-left: 15px;
+  margin-right: 15px;
+}
+.inputLoadButton {
+  border-right: 2px solid black;
+  border-bottom: 2px solid black;
+  border-top: 2px solid black;
+  border-left: 0;
+  padding: 0.2em;
+  color: black;
+  font-size: 1.5em;
+  font-weight: bold;
+  background-color: rgba(255, 86, 8, 0.692);
+  cursor: pointer;
+  box-shadow: 2px 2px 2px 2px rgba(1, 1, 1, 0.235);
+}
+.inputLoadButton:hover {
+  background-image: url("../assets/QRcode.jpg");
+  background-size: 100% 100%;
+}
+.serverStatus {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.serverStatusText{
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-top: 10px;
+  border: 2px solid black;
+  border-radius: 5px;
+}
+.resetButton{
+  padding: 5px;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-top: 10px;
+  border: 2px solid black;
+  border-radius: 5px;
+  background-color: white;
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+}
+.resetButton:hover{
+  background-image: url("../assets/QRcode.jpg");
+  background-size: 100% 100%;
+}
 
 @media (max-aspect-ratio: 16/11) {
 }

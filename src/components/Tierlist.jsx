@@ -8,8 +8,27 @@ import qrCode from "../assets/QRCode.jpg";
 import Nekoobs from "../assets/Liu_NoBg.png";
 import UpArrow from "../assets/arrowUp.png";
 import DownArrow from "../assets/arrowDown.png";
+import axios from "axios";
 
 function Tierlist() {
+  const [status, setStatus] = useState("Offine❌");
+  //http://127.0.0.1:4000
+  useEffect(() => {
+    axios
+      .get("https://60b1-1-46-136-232.ngrok-free.app/online", {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      })
+      .then(() => {
+        setStatus(() => "Online✅");
+      })
+      .catch((err) => {
+        console.error("Tierlist Error : ", err);
+        setStatus(() => "Offine❌");
+      });
+  }, []);
+
   const ref = createRef(null);
 
   const [image, takeScreenShot] = useScreenshot({
@@ -17,7 +36,10 @@ function Tierlist() {
     quality: 1,
   });
 
-  const download = (image, { name = "img", extension = "png" } = {}) => {
+  const download = (
+    image,
+    { name = "TierlistImg", extension = "png" } = {}
+  ) => {
     const a = document.createElement("a");
     a.href = image;
     a.download = createFileName(extension, name);
@@ -27,10 +49,91 @@ function Tierlist() {
   const downloadScreenshot = () =>
     takeScreenShot(ref.current, { scale: 3 }).then(download);
 
-  /*Default Row*/
+  ////////////////////////////////////////////////////////////////////////////
+
+  const testTierList1 = {
+    rank: "A",
+    background_color: "rgb(255, 102, 102)",
+    candidates: [
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+    ],
+  };
+  const testTierList2 = {
+    rank: "B",
+    background_color: "rgb(255, 102, 102)",
+    candidates: [
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCode.jpg")',
+    ],
+  };
+  const testTierList3 = {
+    rank: "C",
+    background_color: "rgb(255, 102, 102)",
+    candidates: ['url("/src/assets/QRCode.jpg")'],
+  };
+  const testTierList4 = {
+    rank: "D",
+    background_color: "rgb(255, 102, 102)",
+    candidates: [
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+
+      'url("/src/assets/QRCode.jpg")',
+    ],
+  };
+  const tempDefault = {
+    id: "default",
+    all_ranks: [testTierList1, testTierList2, testTierList3, testTierList4],
+    remained_candidates: [
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCodde.png")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+      'url("/src/assets/QRCode.jpg")',
+    ],
+  };
+
+  const [storageTierList, setStorageTierList] = useState(() => {
+    // sessionStorage.clear();
+
+    const savedData = sessionStorage.getItem("storageTierList");
+    return savedData ? JSON.parse(savedData) : tempDefault;
+  });
+
+  const [currentTierList, setCurrentTierList] = useState(storageTierList);
+
+  useEffect(() => {
+    setTimeout(() => setCurrentTierList(storageTierList), 200);
+  }, [storageTierList]);
+
+  useEffect(() => {
+    sessionStorage.setItem("storageTierList", JSON.stringify(storageTierList));
+    console.log("Storage: ", storageTierList);
+  }, [storageTierList]);
+
+  /////////////////////////////////////////////////////////
+
+  /* Before introduced Object
+  Default Row
   const [row, setRow] = useState(["A", "B", "C", "D", "F"]);
 
-  /*Default Candidates*/
+  /*Default Candidates
   const [candidates, setCandadates] = useState([
     qrCode,
     qrCode,
@@ -51,7 +154,9 @@ function Tierlist() {
     qrCode1,
     qrCode,
   ]);
+  */
 
+  //TODO Dragula
   useEffect(() => {
     const drake = Dragula({
       isContainer: function (el) {
@@ -61,6 +166,7 @@ function Tierlist() {
         );
       },
     });
+
     return () => {
       drake.destroy();
     };
@@ -69,8 +175,15 @@ function Tierlist() {
   const [addRowText, setAddrowText] = useState("");
 
   function addRowHandler() {
-    setRow((prev) => [...prev, addRowText]);
-    setAddrowText((prev) => "");
+    const rankTemplate = {
+      rank: addRowText,
+      background_color: "rgb(255, 102, 102)",
+      candidates: [],
+    };
+    setCurrentTierList((prev) => ({
+      ...prev,
+      all_ranks: [...prev.all_ranks, rankTemplate],
+    }));
   }
 
   function moveRow(currentRow, direction) {
@@ -101,6 +214,115 @@ function Tierlist() {
     moveRow(currentRow, 1);
   }
 
+  const [test, setTest] = useState("");
+  const [upLoadText, setUpLoadText] = useState("");
+
+  ///////////////////upLoadTierlistHandler
+  function upLoadTierlistHandler() {
+    const remainedCandidates = [];
+    const remained = document.getElementsByClassName(`${styles.candidates}`);
+
+    Array.from(remained).forEach((element) => {
+      const candidates = element.querySelectorAll(
+        `.${styles.candidatesContainer}`
+      );
+      candidates.forEach((c) => {
+        remainedCandidates.push(c.style.backgroundImage);
+        console.log(remainedCandidates);
+      });
+    });
+
+    const elements = document.getElementsByClassName(`${styles.rank}`);
+    setUpLoadRank(() => {});
+    const allRanks = [];
+    for (let i = 0; i < elements.length; i++) {
+      const backgroundImage = [];
+      const rankText = elements[i].querySelector(
+        `.${styles.headerText}`
+      ).textContent;
+      const backGroundColor = elements[i].querySelector(`.${styles.header}`)
+        .style.backgroundColor;
+      const candidates = elements[i].querySelectorAll(
+        `.${styles.candidatesContainer}`
+      );
+      candidates.forEach((candidate) => {
+        backgroundImage.push(candidate.style.backgroundImage);
+        console.log(candidate.style.backgroundImage);
+        console.log(
+          document.querySelector(`.${styles.inputAddRowButton}`).style
+            .backgroundImage
+        );
+      });
+      const rankObject = {
+        rank: rankText,
+        background_color: backGroundColor,
+        candidates: backgroundImage,
+      };
+      console.log(rankObject);
+      allRanks.push(rankObject);
+    }
+    console.log(allRanks);
+    const uniqueId = makeid(5);
+    const readyRankObject = {
+      id: uniqueId,
+      all_ranks: allRanks,
+      remained_candidates: remainedCandidates,
+    };
+
+    console.log(readyRankObject);
+
+    axios
+      .post("https://60b1-1-46-136-232.ngrok-free.app/addTierList", readyRankObject)
+      .then((r) => {
+        setUpLoadText(() => r.data);
+      })
+      .catch((error) => {
+        console.error("Error adding message:", error);
+      });
+  }
+
+  //NewZone
+
+  //New Zone
+  function makeid(length) {
+    //Thanks for this, found on stackoverflow
+    let result = "";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+  }
+
+  const [upLoadRank, setUpLoadRank] = useState([]);
+  const [upLoadTierList, setUpLoadTierList] = useState([]);
+
+  function loadTierlistHandler(id) {
+    //testLoad
+    if (!id) {
+      return;
+    }
+    axios
+      .get(`https://60b1-1-46-136-232.ngrok-free.app/loadRankObjects/${id}`, {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      })
+      .then((r) => {
+        if (Array.isArray(r.data.all_ranks) && r.data.all_ranks.length > 0) {
+          setStorageTierList(() => r.data);
+          window.location.reload();
+        } else {
+          setUpLoadText("Data not found");
+        }
+      })
+      .catch(() => setUpLoadText("Data not Found"));
+  }
+
   const [isVisible, setIsVisible] = useState(false);
 
   const [currentText, setCurrentText] = useState("");
@@ -117,6 +339,8 @@ function Tierlist() {
   }
 
   function settingsHandler(e) {
+    console.log(upLoadRank);
+
     setIsVisible(!isVisible);
     if (e) {
       const currentSpan = e.target
@@ -155,6 +379,23 @@ function Tierlist() {
   function colorHandler(e) {
     setHeaderColor(e.target.value);
     currentColorHeader.style.backgroundColor = headerColor;
+  }
+
+  //TODO resetHandler
+  const [resetCount, setResetCount] = useState(0);
+  const [resetValue, setResetValue] = useState("Reset");
+
+  function resetTierlistHandler() {
+    setResetCount((prev) => prev + 1);
+    console.log(resetCount);
+    if (resetCount > 0) {
+      window.location.reload();
+      setStorageTierList(() => tempDefault);
+    } else {
+      setResetValue(() => "Sure?");
+    }
+
+    setTimeout(() => (setResetCount(0), setResetValue(() => "Reset")), 3000);
   }
 
   return (
@@ -200,14 +441,14 @@ function Tierlist() {
         </div>
       </div>
       <AllPages />
-      <div className={styles.topText}>Tierlist 0.70beta</div>
+      <div className={styles.topText}>Tierlist 1.0release</div>
       <div className={styles.tierlistContainer}>
         <div className={styles.tierlistRankContainer}>
           <div className={styles.tierlistRank} ref={ref}>
-            {row.map((code, index) => (
+            {currentTierList.all_ranks.map((rankObject, index) => (
               <div key={`tierlistRank ${index}`} className={styles.rank}>
                 <div
-                  style={{ backgroundColor: "#FF6666" }}
+                  style={{ backgroundColor: rankObject.background_color }}
                   className={styles.header}
                 >
                   <span
@@ -215,10 +456,22 @@ function Tierlist() {
                     contentEditable
                     suppressContentEditableWarning={true}
                   >
-                    {code}
+                    {rankObject.rank}
                   </span>
                 </div>
-                <div className={styles.picBox}></div>
+                <div
+                  className={styles.picBox}
+                  //////////Unselected Candidates
+                >
+                  {rankObject.candidates.map((candidate, candidateIndex) => (
+                    <div
+                      key={`candidate ${candidateIndex}`}
+                      style={{ backgroundImage: candidate }}
+                      className={styles.candidatesContainer}
+                      alt={`pic ${candidateIndex + 1}`}
+                    ></div>
+                  ))}
+                </div>
                 <div className={styles.setting}>
                   <div className={styles.settingIcon}>
                     <img
@@ -247,10 +500,10 @@ function Tierlist() {
           </div>
         </div>
         <div className={styles.inputContainer}>
-          <div className={styles.input}>
+          <div className={styles.inputMultiContainer}>
             <button
               className={styles.inputAddRowButton}
-              onClick={addRowHandler}
+              onClick={() => addRowHandler()}
             >
               Add Row
             </button>
@@ -262,34 +515,64 @@ function Tierlist() {
               onChange={(e) => setAddrowText(e.target.value)}
             />
           </div>
+          <div className={styles.inputMultiContainer}>
+            <button ///////////// Save
+              className={styles.inputAddRowButton}
+              onClick={() => upLoadTierlistHandler(upLoadText)}
+            >
+              Save
+            </button>
+            <input /////////////////Load
+              className={styles.inputAddRowText}
+              type="text"
+              value={upLoadText}
+              name="upLoadText"
+              onChange={(e) => setUpLoadText(e.target.value)}
+            />
+            <button
+              className={styles.inputLoadButton}
+              onClick={() => loadTierlistHandler(upLoadText)}
+            >
+              Load
+            </button>
+            <div className={styles.serverStatus}>
+              <h1 className={styles.serverStatusText}>
+                Server Status : {status}
+              </h1>
+              <button
+                className={styles.resetButton}
+                onClick={() => resetTierlistHandler()}
+              >
+                {resetValue}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div className={styles.rankHandlerContainer}>
         <div className={styles.rankHandler}>
           <div className={styles.candidates}>
-            {candidates.map((code, index) => (
-              <div
-                className={styles.candidatesContainer}
-                style={{
-                  backgroundImage: `url(${code})`,
-                }}
-                key={index}
-                alt={`pic ${index + 1}`}
-              >
-                <img
-                  src={code}
-                  style={{ display: "none" }}
-                  alt={`pic ${index + 1}`}
-                />
-              </div>
-            ))}
+            {currentTierList.remained_candidates.map(
+              (candidate, candidateindex) => (
+                <div
+                  className={styles.candidatesContainer}
+                  style={{
+                    backgroundImage: candidate,
+                  }}
+                  key={`candidate ${candidateindex}`}
+                  alt={`pic ${candidateindex + 1}`}
+                ></div>
+              )
+            )}
           </div>
         </div>
       </div>
-
       <div className={styles.sceenshotContainer}>
-        <button onClick={downloadScreenshot} className={styles.sceenshot}>
-          Sigma Mode
+        <button
+          onClick={() => downloadScreenshot()}
+          className={styles.sceenshot}
+        >
+          Download
         </button>
       </div>
     </>
