@@ -1,0 +1,77 @@
+.background {
+  display: flex;
+  background-color: rgb(83, 126, 255);
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  stroke: black;
+  stroke-width: 2px;
+  color: white;
+}
+.NavigatorImage {
+  height: 50px;
+  stroke: black;
+  stroke-width: 5px;
+}
+.topText {
+  -webkit-text-stroke: 1.2px rgb(0, 0, 0);
+  font-weight: bold;
+}
+
+.mainContainer {
+  margin-left: 250px;
+  margin-right: 250px;
+}
+
+.tierlistSampleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tierlistSampleImage {
+  height: 350px;
+  display: flex;
+  flex: 1;
+}
+.firstText {
+  justify-content: center;
+  display: flex;
+  font-size: 2.2em;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+.secondText {
+  justify-content: center;
+  display: flex;
+  font-size: 2em;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+.createTierlistContainer{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.createTierlist{
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.6em;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.251);
+  border:2px solid black ;
+  border-radius: 18px;
+  transition: 0.2s ease;
+  padding: 0.8em;
+  cursor: pointer;
+}
+.createTierlist:hover {
+  color: rgb(159, 159, 159);
+  transform: scale(1.05);
+}

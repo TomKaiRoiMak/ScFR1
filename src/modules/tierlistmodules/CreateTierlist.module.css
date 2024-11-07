@@ -16,6 +16,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 20px;
   }
   .tierlistRank {
     justify-content: center;
@@ -25,7 +26,7 @@
     border-bottom: 1px solid black;
     border-top: 1px solid black;
     width: 100%;
-    max-width: 1220px;
+    max-width: 1100px;
   }
 
   .picBox {
@@ -109,16 +110,18 @@
     padding: 0.5em;
     align-items: center;
     cursor: pointer;
+    margin-right: 20px;
   }
   .sceenshot:hover {
     color: rgb(151, 151, 151);
   }
-  .sceenshotContainer {
+  .IOContainer {
     display: flex;
     justify-content: center;
     text-align: center;
-    margin-top: 1em;
-    margin-bottom: 2em;
+    margin-top: 20px;
+    justify-content: center;
+    align-items: center;
   }
 
   .inputAddRowButton {
@@ -140,6 +143,7 @@
   }
 
   .inputAddRowText {
+    text-indent: 6px;
     border: 2px solid black;
     padding: 0.2em;
     font-size: 1.5em;
@@ -164,7 +168,7 @@
   .settingPic {
     cursor: pointer;
     width: 35px;
-    margin-left: 5px;
+    margin-left: 6px;
   }
   .settingPic:hover {
     opacity: 60%;
@@ -278,7 +282,6 @@
     width: 50px;
     height: 50px;
     border-radius: 10px;
-    margin-left: 30px;
     cursor: pointer;
     border: 2px solid black;
   }
@@ -317,14 +320,14 @@
   justify-content: center;
   align-items: center;
 }
-.serverStatusText{
+.serverStatusText {
   font-weight: bold;
   font-size: 1.2em;
   margin-top: 10px;
   border: 2px solid black;
   border-radius: 5px;
 }
-.resetButton{
+.resetButton {
   padding: 5px;
   font-weight: bold;
   font-size: 1.2em;
@@ -336,10 +339,136 @@
   cursor: pointer;
   display: flex;
 }
-.resetButton:hover{
+.resetButton:hover {
   background-image: url("../assets/QRcode.jpg");
   background-size: 100% 100%;
 }
+/* colorbucket */
+.colorBucket {
+  width: 50px;
+}
 
+.colorContainer {
+  background-color: rgba(0, 0, 0, 0.174);
+  display: flex;
+  height: fit-content;
+  padding: 4px;
+  border-radius: 15px;
+  margin-left: 10px;
+}
+
+.idCountContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+.idCountText {
+  border: 2px solid black;
+  border-radius: 6px;
+  padding: 2px;
+  font-size: 1em;
+}
+
+.uploaderContainer {
+  background-image: url(../../assets/transparentgrid.jpg);
+  border: 2px solid black;
+  border-radius: 5px;
+  display: flex;
+  height: 4em;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.uploader {
+  font-size: 1.4em;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.createContainer {
+  display: flex;
+  margin-left: 200px;
+  margin-right: 200px;
+  flex-direction: column;
+}
+
+.createNameContainer {
+  margin-top: 10px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1em;
+}
+.createNameBox {
+  background-color: rgba(255, 0, 0, 0.573);
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.createInputName {
+  width: 25em;
+  height: 1.4em;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.7em;
+  border-radius: 10px;
+}
+
+.createDescContainer {
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-weight: bold;
+  font-size: 1em;
+}
+.createDescBox {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(80, 80, 80, 0.34);
+  padding: 15px;
+  border-radius: 10px;
+  flex: 1;
+  text-align: center;
+}
+.createInputDesc {
+  resize: none;
+  height: 200px;
+  border: 2px solid black;
+  border-radius: 8px;
+  overflow: auto;
+  outline: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  padding: 10px;
+  font-size: 1.4em;
+  font-weight: bold;
+  
+}
+.createPublicTemplateContainer{
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+
+}
+.createPublicTemplateButton{
+  font-weight: bold;
+  font-size: 1.5em;
+  padding: 15px;
+  cursor: pointer;
+  border-radius: 10px;
+  background-color: rgba(255, 0, 0, 0.402);
+
+}
 @media (max-aspect-ratio: 16/11) {
 }

@@ -7,11 +7,12 @@ function About() {
   return (
     <>
     <AllPages/>
+    <style>{`body{background-color: #fae8e8;}`}</style>
     <div className={styles.container}>
-      <h className={styles.head}>Mathayom 6/10</h><br/>
-      <h className={styles.text1}>Homeroom Teacher<br/><h className={styles.text2}>Wannalak Khawbuasar</h></h>
-      <h className={styles.text1}>Prez<br/><h className={styles.text2}>Preme Jr.</h></h>
-      <h className={styles.text1}>Deputy Prez<br/><h className={styles.text2}>TomKaiRoiMak</h></h>
+      <div className={styles.head}>Mathayom 6/10</div><br/>
+      <div className={styles.text1}>Homeroom Teacher<br/><div className={styles.text2}>Wannalak Khawbuasar</div></div>
+      <div className={styles.text1}>Prez<br/><div className={styles.text2}>Preme Jr.</div></div>
+      <div className={styles.text1}>Deputy Prez<br/><div className={styles.text2}>TomKaiRoiMak</div></div>
     </div>
     </>
   )

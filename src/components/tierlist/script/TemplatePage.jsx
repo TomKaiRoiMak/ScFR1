@@ -1,21 +1,65 @@
-import React, { useState, useRef, createRef, useEffect } from "react";
-import styles from "../modules/Tierlist.module.css";
-import AllPages from "./AllPages";
-import { useScreenshot, createFileName } from "use-react-screenshot";
+import React, {
+  useState,
+  useRef,
+  createRef,
+  useEffect,
+  useCallback,
+} from "react";
+import styles from "../../../modules/tierlistmodules/TemplatePage.module.css";
+import AllPages from "../../AllPages.jsx";
 import Dragula from "react-dragula";
-import qrCode1 from "../assets/QRCodde.png";
-import qrCode from "../assets/QRCode.jpg";
-import Nekoobs from "../assets/Liu_NoBg.png";
-import UpArrow from "../assets/arrowUp.png";
-import DownArrow from "../assets/arrowDown.png";
+import Nekoobs from "../../../assets/Liu_NoBg.png";
+import UpArrow from "../../../assets/arrowUp.png";
+import DownArrow from "../../../assets/arrowDown.png";
 import axios from "axios";
+import editIcon from "../../../assets/EditIcon.png";
+import colorBucket from "../../../assets/goofy_ahh_bucket.png";
+import html2canvas from "html2canvas";
+import { useDropzone } from "react-dropzone";
+import CandidateImage from "../script/candidateImage.jsx";
+import { useParams } from "react-router-dom";
 
-function Tierlist() {
+const TemplatePage = () => {
+  const { templateId } = useParams();
+  const [saveable, setSaveable] = useState(true);
+
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      if (saveable) {
+        alert("You can't save anymore!");
+        setSaveable(false);
+      }
+      const files = acceptedFiles;
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setCurrentTierList((prev) => ({
+            ...prev,
+            remained_candidates: [
+              ...prev.remained_candidates,
+              `url(${reader.result})`,
+            ],
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
+    },
+    [saveable]
+  );
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/png": [".png", ".jpg"],
+    },
+  });
+
   const [status, setStatus] = useState("Offine❌");
+
+  const [idCount, setIDCount] = useState("Not Connected");
   //http://127.0.0.1:4000
   useEffect(() => {
     axios
-      .get("https://60b1-1-46-136-232.ngrok-free.app/online", {
+      .get("http://127.0.0.1:4000/online", {
         headers: {
           "ngrok-skip-browser-warning": "69420",
         },
@@ -27,134 +71,119 @@ function Tierlist() {
         console.error("Tierlist Error : ", err);
         setStatus(() => "Offine❌");
       });
+    axios
+      .get("http://127.0.0.1:4000/get_id_count", {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      })
+      .then((r) => {
+        setIDCount(() => r.data);
+      })
+      .catch((err) => {
+        console.error("get_id_count error : ", err);
+      });
   }, []);
 
-  const ref = createRef(null);
+  const downloadScreenshot = () => {
+    const element = document.querySelector(`.${styles.tierlistRank}`);
 
-  const [image, takeScreenShot] = useScreenshot({
-    type: "image/png",
-    quality: 1,
-  });
-
-  const download = (
-    image,
-    { name = "TierlistImg", extension = "png" } = {}
-  ) => {
-    const a = document.createElement("a");
-    a.href = image;
-    a.download = createFileName(extension, name);
-    a.click();
+    console.log(element);
+    if (!element) {
+      return;
+    }
+    html2canvas(element, {
+      scale: 1,
+      useCORS: true,
+      allowTaint: true,
+      allowCORS: true,
+      CacheControl: "no-cache",
+      removeContainer: true,
+    })
+      .then((canvas) => {
+        let image64 = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = image64;
+        a.download = `your-tierlist-${makeid(10)}`;
+        a.click();
+      })
+      .catch((err) => console.error(err));
   };
-
-  const downloadScreenshot = () =>
-    takeScreenShot(ref.current, { scale: 3 }).then(download);
 
   ////////////////////////////////////////////////////////////////////////////
 
   const testTierList1 = {
     rank: "A",
     background_color: "rgb(255, 102, 102)",
-    candidates: [
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-    ],
+    text_color: "rgb(0, 0, 0)",
+    candidates: [],
   };
   const testTierList2 = {
     rank: "B",
     background_color: "rgb(255, 102, 102)",
-    candidates: [
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCode.jpg")',
-    ],
+    text_color: "rgb(0, 0, 0)",
+    candidates: [],
   };
   const testTierList3 = {
     rank: "C",
     background_color: "rgb(255, 102, 102)",
-    candidates: ['url("/src/assets/QRCode.jpg")'],
+    text_color: "rgb(0, 0, 0)",
+    candidates: [],
   };
   const testTierList4 = {
     rank: "D",
     background_color: "rgb(255, 102, 102)",
-    candidates: [
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-
-      'url("/src/assets/QRCode.jpg")',
-    ],
+    text_color: "rgb(0, 0, 0)",
+    candidates: [],
   };
   const tempDefault = {
     id: "default",
     all_ranks: [testTierList1, testTierList2, testTierList3, testTierList4],
-    remained_candidates: [
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCodde.png")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-      'url("/src/assets/QRCode.jpg")',
-    ],
+    remained_candidates: [],
+    name: "Test",
+    description: "",
   };
 
-  const [storageTierList, setStorageTierList] = useState(() => {
-    // sessionStorage.clear();
+  function getTemplate(templateId) {
+    axios
+      .get(`http://127.0.0.1:4000/loadTemplateObject/${templateId}`, {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      })
+      .then((r) => {
+        sessionStorage.setItem(`${templateId}`, JSON.stringify(r.data));
+        setCurrentTierList(r.data);
+        setPublicName(r.data.name);
+        setPublicDescription(r.data.description);
+      })
+      .catch(() => alert("Data not found"));
+  }
 
-    const savedData = sessionStorage.getItem("storageTierList");
-    return savedData ? JSON.parse(savedData) : tempDefault;
+  const [storageTierList, setStorageTierList] = useState(() => {
+    //sessionStorage.clear();
+
+    const savedData = sessionStorage.getItem(`${templateId}`);
+    if (savedData) {
+      return JSON.parse(savedData);
+    } else {
+      getTemplate(templateId);
+      return tempDefault;
+    }
   });
 
   const [currentTierList, setCurrentTierList] = useState(storageTierList);
 
   useEffect(() => {
-    setTimeout(() => setCurrentTierList(storageTierList), 200);
+    setCurrentTierList(storageTierList);
   }, [storageTierList]);
 
   useEffect(() => {
-    sessionStorage.setItem("storageTierList", JSON.stringify(storageTierList));
-    console.log("Storage: ", storageTierList);
+    sessionStorage.setItem(`${templateId}`, JSON.stringify(storageTierList));
   }, [storageTierList]);
+  //TODO changeUniqueI
 
   /////////////////////////////////////////////////////////
-
-  /* Before introduced Object
-  Default Row
-  const [row, setRow] = useState(["A", "B", "C", "D", "F"]);
-
-  /*Default Candidates
-  const [candidates, setCandadates] = useState([
-    qrCode,
-    qrCode,
-    qrCode1,
-    qrCode,
-    qrCode1,
-    qrCode,
-    qrCode,
-    qrCode,
-    qrCode1,
-    qrCode,
-    qrCode1,
-    qrCode,
-    qrCode,
-    qrCode,
-    qrCode1,
-    qrCode,
-    qrCode1,
-    qrCode,
-  ]);
-  */
 
   //TODO Dragula
   useEffect(() => {
@@ -166,11 +195,24 @@ function Tierlist() {
         );
       },
     });
+    drake.on("dragend", () => {
+      trySave();
+    });
 
     return () => {
       drake.destroy();
     };
-  }, []);
+  }, [saveable]);
+
+  function trySave() {
+    if (!saveable) {
+      return;
+    }
+    sessionStorage.setItem(
+      `${templateId}`,
+      JSON.stringify(preUploadTierlistHandler())
+    );
+  }
 
   const [addRowText, setAddrowText] = useState("");
 
@@ -179,11 +221,13 @@ function Tierlist() {
       rank: addRowText,
       background_color: "rgb(255, 102, 102)",
       candidates: [],
+      text_color: "rgb(0, 0, 0)",
     };
     setCurrentTierList((prev) => ({
       ...prev,
       all_ranks: [...prev.all_ranks, rankTemplate],
     }));
+    setAddrowText("");
   }
 
   function moveRow(currentRow, direction) {
@@ -214,21 +258,19 @@ function Tierlist() {
     moveRow(currentRow, 1);
   }
 
-  const [test, setTest] = useState("");
   const [upLoadText, setUpLoadText] = useState("");
-
+  const [uniqueId, setUniqueId] = useState(makeid(5));
   ///////////////////upLoadTierlistHandler
-  function upLoadTierlistHandler() {
+  function preUploadTierlistHandler() {
     const remainedCandidates = [];
     const remained = document.getElementsByClassName(`${styles.candidates}`);
 
     Array.from(remained).forEach((element) => {
       const candidates = element.querySelectorAll(
-        `.${styles.candidatesContainer}`
+        `.${styles.candidatesContainer}[data-bg-image="true"]`
       );
       candidates.forEach((c) => {
         remainedCandidates.push(c.style.backgroundImage);
-        console.log(remainedCandidates);
       });
     });
 
@@ -242,46 +284,53 @@ function Tierlist() {
       ).textContent;
       const backGroundColor = elements[i].querySelector(`.${styles.header}`)
         .style.backgroundColor;
+      const textColor = elements[i].querySelector(`.${styles.header}`).style
+        .color;
       const candidates = elements[i].querySelectorAll(
-        `.${styles.candidatesContainer}`
+        `.${styles.candidatesContainer}[data-bg-image="true"]`
       );
+      console.log(candidates);
       candidates.forEach((candidate) => {
         backgroundImage.push(candidate.style.backgroundImage);
-        console.log(candidate.style.backgroundImage);
-        console.log(
-          document.querySelector(`.${styles.inputAddRowButton}`).style
-            .backgroundImage
-        );
+        console.log(backgroundImage);
       });
       const rankObject = {
         rank: rankText,
         background_color: backGroundColor,
+        text_color: textColor,
         candidates: backgroundImage,
       };
-      console.log(rankObject);
       allRanks.push(rankObject);
     }
-    console.log(allRanks);
-    const uniqueId = makeid(5);
     const readyRankObject = {
       id: uniqueId,
       all_ranks: allRanks,
+      name: PublicName,
+      origin: currentTierList.origin,
+      description: PublicDescription,
       remained_candidates: remainedCandidates,
     };
 
     console.log(readyRankObject);
+    return readyRankObject;
+  }
 
+  function upLoadTierlistHandler() {
+    if (!saveable) {
+      alert("create template if you to save imported images!");
+      return;
+    }
+    const toGo = preUploadTierlistHandler();
     axios
-      .post("https://60b1-1-46-136-232.ngrok-free.app/addTierList", readyRankObject)
+      .post("http://127.0.0.1:4000/addTierList", toGo)
       .then((r) => {
         setUpLoadText(() => r.data);
       })
       .catch((error) => {
         console.error("Error adding message:", error);
       });
+    setUniqueId(() => makeid(5));
   }
-
-  //NewZone
 
   //New Zone
   function makeid(length) {
@@ -299,28 +348,33 @@ function Tierlist() {
   }
 
   const [upLoadRank, setUpLoadRank] = useState([]);
-  const [upLoadTierList, setUpLoadTierList] = useState([]);
 
   function loadTierlistHandler(id) {
-    //testLoad
-    if (!id) {
+    if (!id || !currentTierList.origin) {
+      alert("Origin not found");
       return;
     }
     axios
-      .get(`https://60b1-1-46-136-232.ngrok-free.app/loadRankObjects/${id}`, {
-        headers: {
-          "ngrok-skip-browser-warning": "69420",
-        },
-      })
+      .get(
+        `http://127.0.0.1:4000/loadRankObjects/${id}?origin=${currentTierList.origin}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
+        }
+      )
       .then((r) => {
         if (Array.isArray(r.data.all_ranks) && r.data.all_ranks.length > 0) {
-          setStorageTierList(() => r.data);
+          sessionStorage.setItem(
+            `${templateId}`,
+            JSON.stringify(r.data)
+          );
           window.location.reload();
         } else {
-          setUpLoadText("Data not found");
+          alert("Data not found");
         }
       })
-      .catch(() => setUpLoadText("Data not Found"));
+      .catch(() => alert("Data not found"));
   }
 
   const [isVisible, setIsVisible] = useState(false);
@@ -329,8 +383,10 @@ function Tierlist() {
   const [currentSpanIndex, setCurrentSpanIndex] = useState("");
   const [currentSpanRow, setCurrentSpanRow] = useState("");
   const [currentRowDelete, setCurrentRowDelete] = useState("");
-  const [headerColor, setHeaderColor] = useState("");
   const [currentColorHeader, setCurrentColorHeader] = useState("");
+  const [currentColorText, setCurrentColorText] = useState("");
+  const [headerColor, setHeaderColor] = useState("");
+  const [textColor, setTextColor] = useState("");
 
   function rgbToHex(rgb) {
     const rgbValues = rgb.match(/\d+/g).map(Number);
@@ -354,18 +410,22 @@ function Tierlist() {
       );
       setCurrentSpanRow([...currentRow.parentNode.children]);
 
+      //TODO rowColor and textColor
       const displayColor = e.target
         .closest(`.${styles.rank}`)
         .querySelector(`.${styles.header}`);
-      const hexColor = rgbToHex(displayColor.style.backgroundColor);
-      setHeaderColor(hexColor);
+
+      const hexColorSpan = rgbToHex(displayColor.style.backgroundColor);
+      const hexColorSpanText = rgbToHex(displayColor.style.color);
+      setHeaderColor(hexColorSpan);
       setCurrentColorHeader(displayColor);
+      setTextColor(hexColorSpanText);
+      setCurrentColorText(displayColor);
     }
   }
   function textEditor(e) {
     const updatedText = e.target.value;
     setCurrentText(updatedText);
-
     currentSpanRow[currentSpanIndex].querySelector(
       `.${styles.headerText}`
     ).textContent = updatedText;
@@ -376,9 +436,13 @@ function Tierlist() {
     setIsVisible(!isVisible);
   }
 
-  function colorHandler(e) {
+  function spanColorHandler(e) {
     setHeaderColor(e.target.value);
     currentColorHeader.style.backgroundColor = headerColor;
+  }
+  function textColorHandler(e) {
+    setTextColor(e.target.value);
+    currentColorText.style.color = textColor;
   }
 
   //TODO resetHandler
@@ -389,8 +453,8 @@ function Tierlist() {
     setResetCount((prev) => prev + 1);
     console.log(resetCount);
     if (resetCount > 0) {
+      sessionStorage.removeItem(`${templateId}`);
       window.location.reload();
-      setStorageTierList(() => tempDefault);
     } else {
       setResetValue(() => "Sure?");
     }
@@ -398,8 +462,23 @@ function Tierlist() {
     setTimeout(() => (setResetCount(0), setResetValue(() => "Reset")), 3000);
   }
 
+  const [PublicName, setPublicName] = useState(() => {
+    const name = currentTierList.name;
+    return name ? name : "Tierlist";
+  });
+  const [PublicDescription, setPublicDescription] = useState(() => {
+    const description = currentTierList.description;
+    return description ? description : "";
+  });
+  useEffect(() => {
+    if (resetCount == 0) {
+      trySave();
+    }
+  });
+
   return (
     <>
+      <style>{`body{background-color: #fae8e8;}`}</style>
       <div
         style={{
           opacity: isVisible ? 1 : 0,
@@ -418,6 +497,8 @@ function Tierlist() {
           </div>
           <div className={styles.settingText}>
             <textarea
+              //TODO altText
+              placeholder="name"
               name="altTextInput"
               className={styles.settingAltInput}
               value={currentText}
@@ -428,27 +509,69 @@ function Tierlist() {
                 className={styles.settingDelete}
                 onClick={() => settingDelete()}
               >
-                KYS RN
+                Remove
               </button>
-              <input
-                type="color"
-                value={headerColor}
-                className={styles.settingColor}
-                onChange={(e) => colorHandler(e)}
-              />
+              <div className={styles.colorContainer}>
+                <input
+                  //TODO changeSpanColor
+                  type="color"
+                  value={headerColor}
+                  className={styles.settingColor}
+                  onChange={(e) => spanColorHandler(e)}
+                />
+                <img src={colorBucket} className={styles.colorBucket} />
+              </div>
+              <div className={styles.colorContainer}>
+                <input
+                  //TODO changeTextColor
+                  type="color"
+                  value={textColor}
+                  className={styles.settingColor}
+                  onChange={(e) => textColorHandler(e)}
+                />
+                <img src={editIcon} className={styles.colorBucket} />
+              </div>
             </div>
           </div>
         </div>
       </div>
       <AllPages />
-      <div className={styles.topText}>Tierlist 1.0release</div>
+      <div className={styles.topText}>Tierlist 1.69alpha</div>
+      <div className={styles.createContainer}>
+        <div className={styles.createNameContainer}>
+          <div className={styles.createNameBox}>
+            <input
+              placeholder="name"
+              value={PublicName}
+              onChange={(e) => setPublicName(e.target.value)}
+              type="text"
+              className={styles.createInputName}
+              name="createNameContainer"
+            />
+          </div>
+        </div>
+        <div className={styles.createDescContainer}>
+          <div className={styles.createDescBox}>
+            <textarea
+              value={PublicDescription}
+              onChange={(e) => setPublicDescription(e.target.value)}
+              placeholder="No description"
+              className={styles.createInputDesc}
+              name="createDescContainer"
+            />
+          </div>
+        </div>
+      </div>
       <div className={styles.tierlistContainer}>
         <div className={styles.tierlistRankContainer}>
-          <div className={styles.tierlistRank} ref={ref}>
+          <div className={styles.tierlistRank}>
             {currentTierList.all_ranks.map((rankObject, index) => (
               <div key={`tierlistRank ${index}`} className={styles.rank}>
                 <div
-                  style={{ backgroundColor: rankObject.background_color }}
+                  style={{
+                    backgroundColor: rankObject.background_color,
+                    color: rankObject.text_color,
+                  }}
                   className={styles.header}
                 >
                   <span
@@ -465,18 +588,24 @@ function Tierlist() {
                 >
                   {rankObject.candidates.map((candidate, candidateIndex) => (
                     <div
-                      key={`candidate ${candidateIndex}`}
-                      style={{ backgroundImage: candidate }}
+                      key={`candidate ${candidateIndex + 1}`}
                       className={styles.candidatesContainer}
-                      alt={`pic ${candidateIndex + 1}`}
-                    ></div>
+                      id={candidateIndex + 1}
+                      style={{
+                        backgroundImage: candidate,
+                      }}
+                      alt={`candidate ${candidateIndex + 1}`}
+                      data-bg-image="true"
+                    >
+                      <CandidateImage imageUrl={candidate} />
+                    </div>
                   ))}
                 </div>
                 <div className={styles.setting}>
                   <div className={styles.settingIcon}>
                     <img
                       className={styles.settingPic}
-                      src={Nekoobs}
+                      src={editIcon}
                       onClick={(e) => settingsHandler(e)}
                     />
                   </div>
@@ -510,10 +639,14 @@ function Tierlist() {
             <input
               className={styles.inputAddRowText}
               type="text"
+              placeholder="name"
               value={addRowText}
               name="addRowText"
               onChange={(e) => setAddrowText(e.target.value)}
             />
+            <div className={styles.idCountContainer}>
+              <h1 className={styles.idCountText}>Count of IDs : {idCount}</h1>
+            </div>
           </div>
           <div className={styles.inputMultiContainer}>
             <button ///////////// Save
@@ -525,13 +658,18 @@ function Tierlist() {
             <input /////////////////Load
               className={styles.inputAddRowText}
               type="text"
+              placeholder="ID"
               value={upLoadText}
               name="upLoadText"
               onChange={(e) => setUpLoadText(e.target.value)}
             />
             <button
               className={styles.inputLoadButton}
-              onClick={() => loadTierlistHandler(upLoadText)}
+              onClick={() => {
+                loadTierlistHandler(upLoadText).then(() => {
+                  window.location.reload();
+                });
+              }}
             >
               Load
             </button>
@@ -555,28 +693,41 @@ function Tierlist() {
             {currentTierList.remained_candidates.map(
               (candidate, candidateindex) => (
                 <div
+                  data-bg-image="true"
                   className={styles.candidatesContainer}
                   style={{
                     backgroundImage: candidate,
                   }}
                   key={`candidate ${candidateindex}`}
                   alt={`pic ${candidateindex + 1}`}
-                ></div>
+                  id={candidateindex}
+                >
+                  <CandidateImage imageUrl={candidate} />
+                </div>
               )
             )}
           </div>
         </div>
       </div>
-      <div className={styles.sceenshotContainer}>
+      <div className={styles.IOContainer}>
         <button
           onClick={() => downloadScreenshot()}
           className={styles.sceenshot}
         >
           Download
         </button>
+
+        <div {...getRootProps()} className={styles.uploaderContainer}>
+          <input {...getInputProps()} className={styles.uploader} />
+          {isDragActive ? (
+            <p className={styles.uploader}>Drop here</p>
+          ) : (
+            <p className={styles.uploader}>Upload Here</p>
+          )}
+        </div>
       </div>
     </>
   );
-}
+};
 
-export default Tierlist;
+export default TemplatePage;
