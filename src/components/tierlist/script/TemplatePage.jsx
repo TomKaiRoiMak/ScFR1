@@ -85,29 +85,34 @@ const TemplatePage = () => {
       });
   }, []);
 
-  const downloadScreenshot = () => {
-    const element = document.querySelector(`.${styles.tierlistRank}`);
+  const [takingSceenshot, setTakingSceenshot] = useState(false);
 
+  const downloadScreenshot = () => {
+    setTakingSceenshot(true);
+
+    const element = document.querySelector(`.${styles.tierlistRank}`);
     console.log(element);
     if (!element) {
       return;
     }
-    html2canvas(element, {
-      scale: 1,
-      useCORS: true,
-      allowTaint: true,
-      allowCORS: true,
-      CacheControl: "no-cache",
-      removeContainer: true,
-    })
-      .then((canvas) => {
-        let image64 = canvas.toDataURL("image/png");
-        const a = document.createElement("a");
-        a.href = image64;
-        a.download = `your-tierlist-${makeid(10)}`;
-        a.click();
+    setTimeout(() => {
+      html2canvas(element, {
+        scale: 1,
+        useCORS: true,
+        allowTaint: true,
+        allowCORS: true,
+        logging: true,
       })
-      .catch((err) => console.error(err));
+        .then((canvas) => {
+          let image64 = canvas.toDataURL("image/png");
+          const a = document.createElement("a");
+          a.href = image64;
+          a.download = `your-tierlist-${makeid(10)}`;
+          a.click();
+        })
+        .catch((err) => console.error(err))
+        .finally(setTakingSceenshot(false));
+    }, 800);
   };
 
   ////////////////////////////////////////////////////////////////////////////
@@ -154,6 +159,7 @@ const TemplatePage = () => {
       .then((r) => {
         sessionStorage.setItem(`${templateId}`, JSON.stringify(r.data));
         setCurrentTierList(r.data);
+        // sessionStorage.setItem(`test`, JSON.stringify(r.data));
         setPublicName(r.data.name);
         setPublicDescription(r.data.description);
       })
@@ -174,13 +180,6 @@ const TemplatePage = () => {
 
   const [currentTierList, setCurrentTierList] = useState(storageTierList);
 
-  useEffect(() => {
-    setCurrentTierList(storageTierList);
-  }, [storageTierList]);
-
-  useEffect(() => {
-    sessionStorage.setItem(`${templateId}`, JSON.stringify(storageTierList));
-  }, [storageTierList]);
   //TODO changeUniqueI
 
   /////////////////////////////////////////////////////////
@@ -365,10 +364,7 @@ const TemplatePage = () => {
       )
       .then((r) => {
         if (Array.isArray(r.data.all_ranks) && r.data.all_ranks.length > 0) {
-          sessionStorage.setItem(
-            `${templateId}`,
-            JSON.stringify(r.data)
-          );
+          sessionStorage.setItem(`${templateId}`, JSON.stringify(r.data));
           window.location.reload();
         } else {
           alert("Data not found");
@@ -396,7 +392,6 @@ const TemplatePage = () => {
 
   function settingsHandler(e) {
     console.log(upLoadRank);
-
     setIsVisible(!isVisible);
     if (e) {
       const currentSpan = e.target
@@ -453,7 +448,9 @@ const TemplatePage = () => {
     setResetCount((prev) => prev + 1);
     console.log(resetCount);
     if (resetCount > 0) {
+      
       sessionStorage.removeItem(`${templateId}`);
+      getTemplate(templateId);
       window.location.reload();
     } else {
       setResetValue(() => "Sure?");
@@ -471,10 +468,10 @@ const TemplatePage = () => {
     return description ? description : "";
   });
   useEffect(() => {
-    if (resetCount == 0) {
+    if (resetCount >= 0) {
       trySave();
     }
-  });
+  }, [PublicName, PublicDescription, isVisible]);
 
   return (
     <>
@@ -575,6 +572,7 @@ const TemplatePage = () => {
                   className={styles.header}
                 >
                   <span
+                    onKeyUp={() => trySave()}
                     className={styles.headerText}
                     contentEditable
                     suppressContentEditableWarning={true}
@@ -586,20 +584,26 @@ const TemplatePage = () => {
                   className={styles.picBox}
                   //////////Unselected Candidates
                 >
-                  {rankObject.candidates.map((candidate, candidateIndex) => (
-                    <div
-                      key={`candidate ${candidateIndex + 1}`}
-                      className={styles.candidatesContainer}
-                      id={candidateIndex + 1}
-                      style={{
-                        backgroundImage: candidate,
-                      }}
-                      alt={`candidate ${candidateIndex + 1}`}
-                      data-bg-image="true"
-                    >
-                      <CandidateImage imageUrl={candidate} />
-                    </div>
-                  ))}
+                  {rankObject.candidates.map((candidate, candidateIndex) =>
+                    takingSceenshot ? (
+                      <CandidateImage
+                        imageUrl={candidate}
+                        key={`img ${candidateIndex}`}
+                      />
+                    ) : (
+                      <div
+                        key={`candidate ${candidateIndex + 1}`}
+                        className={styles.candidatesContainer}
+                        id={candidateIndex + 1}
+                        style={{
+                          visibility: "visible",
+                          backgroundImage: candidate,
+                        }}
+                        alt={`candidate ${candidateIndex + 1}`}
+                        data-bg-image="true"
+                      ></div>
+                    )
+                  )}
                 </div>
                 <div className={styles.setting}>
                   <div className={styles.settingIcon}>
@@ -701,9 +705,7 @@ const TemplatePage = () => {
                   key={`candidate ${candidateindex}`}
                   alt={`pic ${candidateindex + 1}`}
                   id={candidateindex}
-                >
-                  <CandidateImage imageUrl={candidate} />
-                </div>
+                ></div>
               )
             )}
           </div>

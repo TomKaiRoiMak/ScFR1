@@ -10,9 +10,6 @@ function Home() {
       <AllPages />
       <style>{`body{background-color: #fae8e8;}`}</style>
       <div className={styles.container}>
-        <Link to="/TierlistTemp" className={styles.tierList}>
-          TierlistTemp
-        </Link>
         <Link to="/Tierlist" className={styles.tierList}>
           Tierlist
         </Link>

@@ -18,16 +18,24 @@
   -webkit-text-stroke: 1.2px rgb(0, 0, 0);
   font-weight: bold;
 }
+.container{
+  width: 100%;
+  margin-bottom: 30px;
+}
 
 .mainContainer {
-  margin-left: 250px;
-  margin-right: 250px;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
 .tierlistSampleContainer {
   display: flex;
   align-items: center;
   justify-content: center;
+  max-width: 1000px;
 }
 .tierlistSampleImage {
   height: 350px;
@@ -70,8 +78,16 @@
   transition: 0.2s ease;
   padding: 0.8em;
   cursor: pointer;
+  margin: 5px;
 }
 .createTierlist:hover {
   color: rgb(159, 159, 159);
   transform: scale(1.05);
+}
+.templateList{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
 }

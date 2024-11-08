@@ -1,0 +1,40 @@
+.browseTextContainer {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.browseText {
+  border: 2px solid black;
+  padding: 10px;
+  border-radius: 10px;
+}
+.browseBox {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.6em;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.251);
+  border: 2px solid black;
+  border-radius: 10px;
+  transition: 0.2s ease;
+  padding: 0.5em;
+  cursor: pointer;
+  margin: 5px;
+}
+.browseBox:hover {
+  color: rgb(159, 159, 159);
+  transform: scale(1.05);
+}
+.browseTemplates {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}

@@ -9,8 +9,8 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import Tierlist from "./components/tierlist/Tierlist";
 import CreateTierlist from "./components/tierlist/CreateTierlist";
-import TierlistTemp from "./components/tierlist/Tierlisttemp";
 import TemplatePage from "./components/tierlist/script/TemplatePage.jsx"
+import BrowseTierlist from "./components/tierlist/BrowseTierlist.jsx";
 
 
 const router = createBrowserRouter([
@@ -38,13 +38,13 @@ const router = createBrowserRouter([
     element: <CreateTierlist />,
   },
   {
-    path: "/TierlistTemp",
-    element: <TierlistTemp />,
-  },
-  {
     path: "/CreateTierlist/:templateId",
     element: <TemplatePage />,
-  }
+  },
+  {
+    path: "/BrowseTierlist",
+    element: <BrowseTierlist />,
+  },
   
 ]);
 

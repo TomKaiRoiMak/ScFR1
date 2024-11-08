@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../../modules/tierlistmodules/CreateTierlist.module.css";
-import ImLazy from "../../../assets/tierlist/lazy.png"
-
+import ImLazy from "../../../assets/tierlist/lazy.png";
 
 const extractURL = (input) => {
   const regex = /url\("(.*)"\)/;
@@ -13,20 +12,20 @@ const CandidateImage = ({ imageUrl, imageIndex }) => {
   const [dataUrl, setDataUrl] = useState(null);
   const extractedUrl = extractURL(imageUrl);
   useEffect(() => {
-    setDataUrl(extractedUrl)
+    setDataUrl(extractedUrl);
   }, [extractedUrl]);
 
   return dataUrl ? (
     <img
-      src={dataUrl}
+      crossOrigin="anonymous"
+      src={`${dataUrl}?cachebuster=${new Date().getTime()}`}
       alt={`Candidate ${imageIndex}`}
       loading="lazy"
       className={styles.candidatesContainer}
-      style={{visibility: "visible"}}
+      style={{ visibility: "visible" }}
     />
   ) : (
     <div></div>
-    
   );
 };
 
