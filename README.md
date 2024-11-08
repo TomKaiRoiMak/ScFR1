@@ -2,7 +2,7 @@
 The Customizable Ranking Experience
 
 
-##Key Features
+## Key Features
 
 - Create Custom Templates: Design your own templates for any ranking category and make it truly unique! Customize each rank with options to change both text color and background color, allowing for a personalized look that stands out.
 
@@ -13,16 +13,16 @@ The Customizable Ranking Experience
 - Flexible loading: Load any tierlist by its unique id, even if you're working from a different template. switch seamlessly between saved lists without losing your place or preferences.
 
 
-###Frontend
+### Frontend
 
 Powered by React for a smooth, dynamic, and interactive user experience.
 
 --------
-###Backend
+### Backend
 Built on Axum, ensuring high-performance, secure, and reliable backend processing.
 
-----
-###Database
+------
+### Database
 SQLite is used to handle and store data efficiently, making each tier list quickly accessible and easily managed.
 
 -----
