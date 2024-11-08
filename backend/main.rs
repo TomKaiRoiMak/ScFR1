@@ -64,6 +64,11 @@ struct RankObjectQuery {
     origin: String,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+struct GetLoadTemplate {
+    limit: String,
+}
+
 async fn add_tierlist(
     Extension(conn): Extension<Arc<Mutex<Connection>>>,
     Json(rank_object): Json<RankObject>,
@@ -295,7 +300,7 @@ async fn add_template(
     }
     let url_name = awss3::to_encode(&tierlist_name).await;
     let unique_id: String = awss3::generate_random_url(5);
-    let id = format!("{}_{}",url_name,unique_id);
+    let id = format!("{}_{}", url_name, unique_id);
     rank_object.id = id;
     rank_object.name = tierlist_name.clone();
     rank_object.description = description.clone();
@@ -386,6 +391,26 @@ async fn load_template_object(
     Json(template_object)
 }
 
+async fn browse_template(
+    Extension(conn): Extension<Arc<Mutex<Connection>>>,
+    Query(query): Query<GetLoadTemplate>,
+) -> String {
+    let limit = query.limit;
+
+    let conn = conn.lock().unwrap();
+    let mut stmt = conn
+        .prepare("SELECT id, name FROM template_objects LIMIT ?")
+        .unwrap();
+    let templates: Vec<(String, String)> = stmt
+        .query_map([limit], |row| Ok((row.get(0)?, row.get(1)?)))
+        .unwrap()
+        .filter_map(Result::ok)
+        .collect();
+
+    println!("{:?}", templates);
+    serde_json::to_string(&templates).unwrap_or_else(|_| String::from("Error"))
+}
+
 #[tokio::main]
 async fn main() {
     let conn: Arc<Mutex<Connection>> =
@@ -459,6 +484,7 @@ async fn main() {
         .route("/addTierList", post(add_tierlist))
         .route("/loadRankObjects/:id", get(get_rank_objects_by_id))
         .route("/get_id_count", get(get_id_count))
+        .route("/browseTemplate", get(browse_template))
         .route("/loadTemplateObject/:templateId", get(load_template_object))
         .route("/addTemplate", post(add_template))
         .layer(DefaultBodyLimit::disable())

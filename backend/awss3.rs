@@ -36,7 +36,6 @@ impl From<std::io::Error> for S3ExampleError {
 }
 
 impl From<ByteStreamError> for S3ExampleError {
-    // Implement From for ByteStreamError
     fn from(error: ByteStreamError) -> Self {
         S3ExampleError::ByteStreamError(error)
     }
