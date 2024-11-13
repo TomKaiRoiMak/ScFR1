@@ -11,8 +11,9 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use std::io::Write;
+use chrono::offset;
 use std::path::Path as path;
+use std::{fmt::format, io::Write, time::SystemTime};
 use std::{fs::File, vec};
 
 use image::codecs::png::PngEncoder; //PngDecoder
@@ -67,13 +68,14 @@ struct RankObjectQuery {
 #[derive(Deserialize, Serialize, Debug)]
 struct GetLoadTemplate {
     limit: String,
+    page: String,
 }
 
 async fn add_tierlist(
     Extension(conn): Extension<Arc<Mutex<Connection>>>,
     Json(rank_object): Json<RankObject>,
 ) -> Json<String> {
-    let conn = conn.lock().unwrap();
+    let conn: std::sync::MutexGuard<'_, Connection> = conn.lock().unwrap();
     conn.execute(
         "INSERT INTO rank_objects (id, origin, name, description, remained_candidates) VALUES (?1, ?2, ?3, ?4, ?5)",
         params![
@@ -363,8 +365,8 @@ async fn load_template_object(
         .unwrap_or_else(|_| RankObject {
             id: "error".to_string(),
             origin: "error".to_string(),
-            name: "error".to_string(),
-            description: "error".to_string(),
+            name: "error or not found".to_string(),
+            description: "error, but you can still load tierlist by unique id 😉".to_string(),
             all_ranks: Vec::new(),
             remained_candidates: Vec::new(),
         });
@@ -395,14 +397,17 @@ async fn browse_template(
     Extension(conn): Extension<Arc<Mutex<Connection>>>,
     Query(query): Query<GetLoadTemplate>,
 ) -> String {
-    let limit = query.limit;
-
+    let limit: String = query.limit;
+    let page: String = query.page;
+    let limit_int: u16 = limit.parse().expect("limit, Not a valid Number");
+    let page_int: u16 = page.parse().expect("page, Not a valid Number");
+    let offset: u16 = (page_int - 1) * limit_int;
     let conn = conn.lock().unwrap();
     let mut stmt = conn
-        .prepare("SELECT id, name FROM template_objects LIMIT ?")
+        .prepare("SELECT id, name FROM template_objects ORDER BY created_at LIMIT ? OFFSET ?")
         .unwrap();
     let templates: Vec<(String, String)> = stmt
-        .query_map([limit], |row| Ok((row.get(0)?, row.get(1)?)))
+        .query_map(params![limit, offset], |row| Ok((row.get(0)?, row.get(1)?)))
         .unwrap()
         .filter_map(Result::ok)
         .collect();
@@ -453,7 +458,8 @@ async fn main() {
             id TEXT PRIMARY KEY,
             name TEXT,
             description TEXT,
-            remained_candidates TEXT NOT NULL
+            remained_candidates TEXT NOT NULL,
+            created_at TEXT DEFAULT (DATETIME('now'))
         );
         ",
             [],

@@ -9,15 +9,15 @@ function Home() {
     <>
       <AllPages />
       <style>{`body{background-color: #fae8e8;}`}</style>
-      <div className={styles.container}>
-        <Link to="/Tierlist" className={styles.tierList}>
-          Tierlist
-        </Link>
+      <div>
+        <div className={styles.container}>
+          <Link to="/Tierlist" className={styles.linkContainer}>
+            Tierlist
+          </Link>
+        </div>
       </div>
       <div className={styles.imgContainer}>
-        <a href="https://www.youtube.com/watch?v=ejlOaw_Sdtg">
-          <img src={QRCode} className={styles.qrCode} />
-        </a>
+        
       </div>
     </>
   );

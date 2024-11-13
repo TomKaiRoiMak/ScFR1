@@ -1,82 +1,49 @@
 .imgContainer {
-display: flex;
-justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
-
 .qrCode {
-    width: 20em;
-    box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.361);
+  width: 20em;
+  box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.361);
 }
 
 .container {
-    max-width: 100%;
-    width: auto;
-    text-align: center;
+  max-width: 100%;
+  width: auto;
+  text-align: center;
 }
 
-
-@media (max-aspect-ratio: 16/11){
-
-.container{
-    max-width: 100%;
-    font-family: 'Courier New', Courier, monospace;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    
+.container {
+  max-width: 100%;
+  font-family: "Courier New", Courier, monospace;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.tierList{
-    color: black;
-    font-weight: bold;
-    text-decoration: none;
-    font-size: 1.6em;
-    background-color: rgb(255, 255, 255);
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.251);
-    border:2px solid black ;
-    border-radius: 18px;
-    margin: 0.4em;
-    transition: 0.2s ease;
-    padding: 0.8em;
-    width: 90%;
-    cursor: pointer;
+.linkContainer {
+  display: inline-block;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.6em;
+  background-color: rgb(255, 255, 255);
+  border: 2px solid black;
+  border-radius: 8px;
+  margin: 0.3em;
+  transition: 0.2s ease;
+  padding: 1em;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.251);
 }
 
-.tierList:hover {
-    color: rgb(159, 159, 159);
-    transform: scale(1.05);
+.linkContainer:hover {
+  color: rgb(159, 159, 159);
+  transform: scale(1.05);
 }
-.container:hover .tierList:not(:hover){
-    transform: scale(0.9);
+.container:hover .linkContainer:not(:hover) {
+  transform: scale(0.92);
 }
-}
-@media (min-aspect-ratio: 16/10) {
-    .tierList{
-        display: inline-block;
-        color: black;
-        font-weight: bold;
-        text-decoration: none;
-        font-size: 1.6em;
-        background-color: rgb(255, 255, 255);
-        border:2px solid black ;
-        border-radius: 8px;
-        margin: 0.3em;
-        transition: 0.2s ease;
-        padding: 1em;
-        text-align: center;
-        cursor: pointer;
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.251);
-        
-    }
-    
-    .tierList:hover {
-        color: rgb(159, 159, 159);
-        transform: scale(1.05);
-    }
-    .container:hover .tierList:not(:hover){
-        transform: scale(0.92);
-    }
-    
-  }

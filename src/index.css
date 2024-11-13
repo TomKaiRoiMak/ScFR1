@@ -44,3 +44,6 @@ input:focus {
   filter: alpha(opacity=40);
 }
 
+.grabbing {
+  cursor: grabbing !important;
+}

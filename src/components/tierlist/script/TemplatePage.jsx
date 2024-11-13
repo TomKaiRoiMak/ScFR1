@@ -21,6 +21,7 @@ import { useParams } from "react-router-dom";
 
 const TemplatePage = () => {
   const { templateId } = useParams();
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [saveable, setSaveable] = useState(true);
 
   const onDrop = useCallback(
@@ -56,10 +57,9 @@ const TemplatePage = () => {
   const [status, setStatus] = useState("Offine❌");
 
   const [idCount, setIDCount] = useState("Not Connected");
-  //http://127.0.0.1:4000
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:4000/online", {
+      .get(`${import.meta.env.VITE_NETWORK_URL}/online`, {
         headers: {
           "ngrok-skip-browser-warning": "69420",
         },
@@ -72,7 +72,7 @@ const TemplatePage = () => {
         setStatus(() => "Offine❌");
       });
     axios
-      .get("http://127.0.0.1:4000/get_id_count", {
+      .get(`${import.meta.env.VITE_NETWORK_URL}/get_id_count`, {
         headers: {
           "ngrok-skip-browser-warning": "69420",
         },
@@ -87,33 +87,53 @@ const TemplatePage = () => {
 
   const [takingSceenshot, setTakingSceenshot] = useState(false);
 
-  const downloadScreenshot = () => {
+  const tempDefault = {
+    id: "default",
+    all_ranks: [],
+    remained_candidates: [],
+    name: "",
+    description: "",
+  };
+  function prePreviewDownload() {
+    setIsPreviewVisible(true);
     setTakingSceenshot(true);
+    setCurrentPreviewTierList(preUploadTierlistHandler());
+    setTimeout(() => {
+      renderPreviewImage();
+      setTakingSceenshot(false);
+    }, 10);
+  }
+  const [currentSceenshotImage, setCurrentSceenshotImage] = useState(null);
+  const [currentPreviewTierList, setCurrentPreviewTierList] =
+    useState(tempDefault);
 
-    const element = document.querySelector(`.${styles.tierlistRank}`);
+  const renderPreviewImage = () => {
+    const element = document.querySelector(`.${styles.tierlistRankPreview}`);
     console.log(element);
     if (!element) {
       return;
     }
-    setTimeout(() => {
-      html2canvas(element, {
-        scale: 1,
-        useCORS: true,
-        allowTaint: true,
-        allowCORS: true,
-        logging: true,
+    html2canvas(element, {
+
+      useCORS: true,
+      allowTaint: true,
+      allowCORS: true,
+      logging: true,
+    })
+      .then((canvas) => {
+        const image64 = canvas.toDataURL("image/png");
+        setCurrentSceenshotImage(image64);
       })
-        .then((canvas) => {
-          let image64 = canvas.toDataURL("image/png");
-          const a = document.createElement("a");
-          a.href = image64;
-          a.download = `your-tierlist-${makeid(10)}`;
-          a.click();
-        })
-        .catch((err) => console.error(err))
-        .finally(setTakingSceenshot(false));
-    }, 800);
+      .catch((err) => console.error(err));
   };
+
+  function downloadSceenshot() {
+    const a = document.createElement("a");
+    a.href = currentSceenshotImage;
+    a.download = `your-tierlist-${makeid(10)}`;
+    a.click();
+    console.log(currentSceenshotImage);
+  }
 
   ////////////////////////////////////////////////////////////////////////////
 
@@ -141,21 +161,17 @@ const TemplatePage = () => {
     text_color: "rgb(0, 0, 0)",
     candidates: [],
   };
-  const tempDefault = {
-    id: "default",
-    all_ranks: [testTierList1, testTierList2, testTierList3, testTierList4],
-    remained_candidates: [],
-    name: "Test",
-    description: "",
-  };
 
   function getTemplate(templateId) {
     axios
-      .get(`http://127.0.0.1:4000/loadTemplateObject/${templateId}`, {
-        headers: {
-          "ngrok-skip-browser-warning": "69420",
-        },
-      })
+      .get(
+        `${import.meta.env.VITE_NETWORK_URL}/loadTemplateObject/${templateId}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
+        }
+      )
       .then((r) => {
         sessionStorage.setItem(`${templateId}`, JSON.stringify(r.data));
         setCurrentTierList(r.data);
@@ -186,6 +202,16 @@ const TemplatePage = () => {
 
   //TODO Dragula
   useEffect(() => {
+    let isDragging = false;
+
+    const handleTouchMove = (e) => {
+      if (isDragging) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+
     const drake = Dragula({
       isContainer: function (el) {
         return (
@@ -194,11 +220,22 @@ const TemplatePage = () => {
         );
       },
     });
-    drake.on("dragend", () => {
+
+    drake.on("drag", (el) => {
+      isDragging = true;
+      el.classList.add("grabbing");
+    });
+
+    drake.on("dragend", (el) => {
+      isDragging = false;
+      el.classList.remove("grabbing");
       trySave();
     });
 
     return () => {
+      document.removeEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
       drake.destroy();
     };
   }, [saveable]);
@@ -245,6 +282,7 @@ const TemplatePage = () => {
         direction > 0 ? targetRow.nextSibling : targetRow
       );
     }
+    trySave();
   }
 
   function upArrowHandler(e) {
@@ -319,14 +357,24 @@ const TemplatePage = () => {
       alert("create template if you to save imported images!");
       return;
     }
+    const checkCandidate = document
+      .querySelector(`.${styles.tierlistRank}`)
+      ?.querySelector(`.${styles.candidatesContainer}`);
+
+
+    if (!checkCandidate) {
+      alert("No you don't")
+      return;
+    }
+
     const toGo = preUploadTierlistHandler();
     axios
-      .post("http://127.0.0.1:4000/addTierList", toGo)
+      .post(`${import.meta.env.VITE_NETWORK_URL}/addTierList`, toGo)
       .then((r) => {
         setUpLoadText(() => r.data);
       })
       .catch((error) => {
-        console.error("Error adding message:", error);
+        console.error("error adding", error);
       });
     setUniqueId(() => makeid(5));
   }
@@ -355,7 +403,9 @@ const TemplatePage = () => {
     }
     axios
       .get(
-        `http://127.0.0.1:4000/loadRankObjects/${id}?origin=${currentTierList.origin}`,
+        `${import.meta.env.VITE_NETWORK_URL}/loadRankObjects/${id}?origin=${
+          currentTierList.origin
+        }`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -433,11 +483,11 @@ const TemplatePage = () => {
 
   function spanColorHandler(e) {
     setHeaderColor(e.target.value);
-    currentColorHeader.style.backgroundColor = headerColor;
+    currentColorHeader.style.backgroundColor = e.target.value;
   }
   function textColorHandler(e) {
     setTextColor(e.target.value);
-    currentColorText.style.color = textColor;
+    currentColorText.style.color = e.target.value;
   }
 
   //TODO resetHandler
@@ -448,7 +498,6 @@ const TemplatePage = () => {
     setResetCount((prev) => prev + 1);
     console.log(resetCount);
     if (resetCount > 0) {
-      
       sessionStorage.removeItem(`${templateId}`);
       getTemplate(templateId);
       window.location.reload();
@@ -461,7 +510,7 @@ const TemplatePage = () => {
 
   const [PublicName, setPublicName] = useState(() => {
     const name = currentTierList.name;
-    return name ? name : "Tierlist";
+    return name ? name : "";
   });
   const [PublicDescription, setPublicDescription] = useState(() => {
     const description = currentTierList.description;
@@ -476,6 +525,33 @@ const TemplatePage = () => {
   return (
     <>
       <style>{`body{background-color: #fae8e8;}`}</style>
+      <div
+        style={{
+          opacity: isPreviewVisible ? 1 : 0,
+          visibility: isPreviewVisible ? "visible" : "hidden",
+          transition: "opacity 0.2s linear",
+        }}
+        className={styles.settingDownloadPage}
+      >
+        <div className={styles.downloadPageContainer}>
+          <div className={styles.downloadExit}>
+            <img
+              className={styles.downloadExitImage}
+              onClick={() => setIsPreviewVisible(false)}
+              src={Nekoobs}
+            />
+          </div>
+          <img src={currentSceenshotImage} className={styles.downloadImage} />
+          <div className={styles.downloadPageButton}>
+            <button
+              className={styles.downloadImageButton}
+              onClick={() => downloadSceenshot()}
+            >
+              Dowload Here!
+            </button>
+          </div>
+        </div>
+      </div>
       <div
         style={{
           opacity: isVisible ? 1 : 0,
@@ -559,138 +635,135 @@ const TemplatePage = () => {
           </div>
         </div>
       </div>
-      <div className={styles.tierlistContainer}>
-        <div className={styles.tierlistRankContainer}>
-          <div className={styles.tierlistRank}>
-            {currentTierList.all_ranks.map((rankObject, index) => (
-              <div key={`tierlistRank ${index}`} className={styles.rank}>
-                <div
-                  style={{
-                    backgroundColor: rankObject.background_color,
-                    color: rankObject.text_color,
-                  }}
-                  className={styles.header}
+      <div className={styles.tierlistRankContainer}>
+        <div className={styles.tierlistRank}>
+          {currentTierList.all_ranks.map((rankObject, index) => (
+            <div key={`tierlistRank ${index}`} className={styles.rank}>
+              <div
+                style={{
+                  backgroundColor: rankObject.background_color,
+                  color: rankObject.text_color,
+                }}
+                className={styles.header}
+              >
+                <span
+                  onKeyUp={() => trySave()}
+                  className={styles.headerText}
+                  contentEditable
+                  suppressContentEditableWarning={true}
                 >
-                  <span
-                    onKeyUp={() => trySave()}
-                    className={styles.headerText}
-                    contentEditable
-                    suppressContentEditableWarning={true}
+                  {rankObject.rank}
+                </span>
+              </div>
+              <div
+                className={styles.picBox}
+                //////////Unselected Candidates
+              >
+                {rankObject.candidates.map((candidate, candidateIndex) => (
+                  // <CandidateImage
+                  //   imageUrl={candidate}
+                  //   key={`img ${candidateIndex}`}
+                  // />
+
+                  <div
+                    key={`candidate ${candidateIndex + 1}`}
+                    className={styles.candidatesContainer}
+                    id={candidateIndex + 1}
+                    style={{
+                      visibility: "visible",
+                      backgroundImage: candidate,
+                    }}
+                    alt={`candidate ${candidateIndex + 1}`}
+                    data-bg-image="true"
+                  ></div>
+                ))}
+              </div>
+              <div className={styles.setting}>
+                <div className={styles.settingIcon}>
+                  <img
+                    className={styles.settingPic}
+                    src={editIcon}
+                    onClick={(e) => settingsHandler(e)}
+                  />
+                </div>
+                <div className={styles.settingArrow}>
+                  <div
+                    className={styles.arrowContainer}
+                    onClick={(e) => upArrowHandler(e)}
                   >
-                    {rankObject.rank}
-                  </span>
-                </div>
-                <div
-                  className={styles.picBox}
-                  //////////Unselected Candidates
-                >
-                  {rankObject.candidates.map((candidate, candidateIndex) =>
-                    takingSceenshot ? (
-                      <CandidateImage
-                        imageUrl={candidate}
-                        key={`img ${candidateIndex}`}
-                      />
-                    ) : (
-                      <div
-                        key={`candidate ${candidateIndex + 1}`}
-                        className={styles.candidatesContainer}
-                        id={candidateIndex + 1}
-                        style={{
-                          visibility: "visible",
-                          backgroundImage: candidate,
-                        }}
-                        alt={`candidate ${candidateIndex + 1}`}
-                        data-bg-image="true"
-                      ></div>
-                    )
-                  )}
-                </div>
-                <div className={styles.setting}>
-                  <div className={styles.settingIcon}>
-                    <img
-                      className={styles.settingPic}
-                      src={editIcon}
-                      onClick={(e) => settingsHandler(e)}
-                    />
+                    <img className={styles.arrowUpDown} src={UpArrow} />
                   </div>
-                  <div className={styles.settingArrow}>
-                    <div
-                      className={styles.arrowContainer}
-                      onClick={(e) => upArrowHandler(e)}
-                    >
-                      <img className={styles.arrowUpDown} src={UpArrow} />
-                    </div>
-                    <div
-                      className={styles.arrowContainer}
-                      onClick={(e) => downArrowHandler(e)}
-                    >
-                      <img className={styles.arrowUpDown} src={DownArrow} />
-                    </div>
+                  <div
+                    className={styles.arrowContainer}
+                    onClick={(e) => downArrowHandler(e)}
+                  >
+                    <img className={styles.arrowUpDown} src={DownArrow} />
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className={styles.inputContainer}>
+        <div className={styles.inputMultiContainer}>
+          <button
+            className={styles.inputAddRowButton}
+            onClick={() => addRowHandler()}
+          >
+            Add Row
+          </button>
+          <input
+            className={styles.inputAddRowText}
+            type="text"
+            placeholder="name"
+            value={addRowText}
+            name="addRowText"
+            onChange={(e) => setAddrowText(e.target.value)}
+          />
+          <div className={styles.idCountContainer}>
+            <h1 className={styles.idCountText}>Count of IDs : {idCount}</h1>
           </div>
         </div>
-        <div className={styles.inputContainer}>
-          <div className={styles.inputMultiContainer}>
+        <div className={styles.inputMultiContainer}>
+          <button ///////////// Save
+            className={styles.inputAddRowButton}
+            onClick={() => upLoadTierlistHandler(upLoadText)}
+          >
+            Save
+          </button>
+          <input /////////////////Load
+            className={styles.inputAddRowText}
+            type="text"
+            placeholder="ID"
+            value={upLoadText}
+            name="upLoadText"
+            onChange={(e) => setUpLoadText(e.target.value)}
+          />
+          <button
+            className={styles.inputLoadButton}
+            onClick={() => {
+              loadTierlistHandler(upLoadText).then(() => {
+                window.location.reload();
+              });
+            }}
+          >
+            Load
+          </button>
+          <div className={styles.serverStatus}>
+            <h1 className={styles.serverStatusText}>
+              Server Status : {status}
+            </h1>
             <button
-              className={styles.inputAddRowButton}
-              onClick={() => addRowHandler()}
+              className={styles.resetButton}
+              onClick={() => resetTierlistHandler()}
             >
-              Add Row
+              {resetValue}
             </button>
-            <input
-              className={styles.inputAddRowText}
-              type="text"
-              placeholder="name"
-              value={addRowText}
-              name="addRowText"
-              onChange={(e) => setAddrowText(e.target.value)}
-            />
-            <div className={styles.idCountContainer}>
-              <h1 className={styles.idCountText}>Count of IDs : {idCount}</h1>
-            </div>
-          </div>
-          <div className={styles.inputMultiContainer}>
-            <button ///////////// Save
-              className={styles.inputAddRowButton}
-              onClick={() => upLoadTierlistHandler(upLoadText)}
-            >
-              Save
-            </button>
-            <input /////////////////Load
-              className={styles.inputAddRowText}
-              type="text"
-              placeholder="ID"
-              value={upLoadText}
-              name="upLoadText"
-              onChange={(e) => setUpLoadText(e.target.value)}
-            />
-            <button
-              className={styles.inputLoadButton}
-              onClick={() => {
-                loadTierlistHandler(upLoadText).then(() => {
-                  window.location.reload();
-                });
-              }}
-            >
-              Load
-            </button>
-            <div className={styles.serverStatus}>
-              <h1 className={styles.serverStatusText}>
-                Server Status : {status}
-              </h1>
-              <button
-                className={styles.resetButton}
-                onClick={() => resetTierlistHandler()}
-              >
-                {resetValue}
-              </button>
-            </div>
           </div>
         </div>
       </div>
+
       <div className={styles.rankHandlerContainer}>
         <div className={styles.rankHandler}>
           <div className={styles.candidates}>
@@ -713,7 +786,7 @@ const TemplatePage = () => {
       </div>
       <div className={styles.IOContainer}>
         <button
-          onClick={() => downloadScreenshot()}
+          onClick={() => prePreviewDownload()}
           className={styles.sceenshot}
         >
           Download
@@ -727,6 +800,49 @@ const TemplatePage = () => {
             <p className={styles.uploader}>Upload Here</p>
           )}
         </div>
+      </div>
+      <div
+        className={styles.tierlistRankPreviewContainer}
+        style={{ opacity: "0" }}
+      >
+        {!takingSceenshot ? null : (
+          <div
+            className={styles.tierlistRankPreview}
+            style={{ visibility: "visible" }}
+          >
+            {currentPreviewTierList.all_ranks.map((rankObject, index) => (
+              <div key={`tierlistRank ${index}`} className={styles.rankPreview}>
+                <div
+                  style={{
+                    backgroundColor: rankObject.background_color,
+                    color: rankObject.text_color,
+                  }}
+                  className={styles.headerPreview}
+                >
+                  <span
+                    onKeyUp={() => trySave()}
+                    className={styles.headerTextPreview}
+                    contentEditable
+                    suppressContentEditableWarning={true}
+                  >
+                    {rankObject.rank}
+                  </span>
+                </div>
+                <div
+                  className={styles.picBoxPreview}
+                  //////////Unselected Candidates
+                >
+                  {rankObject.candidates.map((candidate, candidateIndex) => (
+                    <CandidateImage
+                      imageUrl={candidate}
+                      key={`img ${candidateIndex}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

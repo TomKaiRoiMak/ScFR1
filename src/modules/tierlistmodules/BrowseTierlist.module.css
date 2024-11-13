@@ -9,6 +9,7 @@
   border: 2px solid black;
   padding: 10px;
   border-radius: 10px;
+  background-color: rgba(255, 0, 0, 0.203);
 }
 .browseBox {
   align-items: center;
@@ -37,4 +38,33 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  flex-direction: column;
+}
+.pageButtonContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.pageButton {
+  background-color: rgba(255, 0, 0, 0.189);
+  padding: 10px;
+  font-size: 1.3em;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.5s ease;
+}
+.pageButton:hover {
+  background-color: rgba(255, 0, 0, 0.326);
+  transform: scale(1.05);
+
+}
+
+.pageText {
+  font-weight: bold;
+  margin-left: 10px;
+  margin-right: 10px;
 }

@@ -3,6 +3,10 @@ import styles from "../../../modules/tierlistmodules/CreateTierlist.module.css";
 import ImLazy from "../../../assets/tierlist/lazy.png";
 
 const extractURL = (input) => {
+  if (input.startsWith("data:image")) {
+    return input;
+  }
+
   const regex = /url\("(.*)"\)/;
   const match = input.match(regex);
   return match ? match[1] : null;
@@ -11,6 +15,7 @@ const extractURL = (input) => {
 const CandidateImage = ({ imageUrl, imageIndex }) => {
   const [dataUrl, setDataUrl] = useState(null);
   const extractedUrl = extractURL(imageUrl);
+
   useEffect(() => {
     setDataUrl(extractedUrl);
   }, [extractedUrl]);
@@ -18,7 +23,7 @@ const CandidateImage = ({ imageUrl, imageIndex }) => {
   return dataUrl ? (
     <img
       crossOrigin="anonymous"
-      src={`${dataUrl}?cachebuster=${new Date().getTime()}`}
+      src={dataUrl.includes("data:image") ? dataUrl : `${dataUrl}?cachebuster=${new Date().getTime()}`}
       alt={`Candidate ${imageIndex}`}
       loading="lazy"
       className={styles.candidatesContainer}
@@ -28,5 +33,6 @@ const CandidateImage = ({ imageUrl, imageIndex }) => {
     <div></div>
   );
 };
+
 
 export default CandidateImage;

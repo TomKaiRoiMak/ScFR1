@@ -16,6 +16,7 @@ import editIcon from "../../assets/EditIcon.png";
 import colorBucket from "../../assets/goofy_ahh_bucket.png";
 import { useDropzone } from "react-dropzone";
 import CandidateImage from "./script/candidateImage.jsx";
+import html2canvas from "html2canvas";
 
 const CreateTierlist = () => {
   const [sentAlert, setSentAlert] = useState(false);
@@ -56,10 +57,9 @@ const CreateTierlist = () => {
   });
 
   const [status, setStatus] = useState("Offine❌");
-  //http://127.0.0.1:4000
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:4000/online", {
+      .get(`${import.meta.env.VITE_NETWORK_URL}/online`, {
         headers: {
           "ngrok-skip-browser-warning": "69420",
         },
@@ -108,13 +108,39 @@ const CreateTierlist = () => {
   const [currentTierList, setCurrentTierList] = useState(tempDefault);
 
   useEffect(() => {
+    let isDragging = false;
+
+    const handleTouchMove = (e) => {
+      if (isDragging) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+
     const drake = Dragula({
       isContainer: function (el) {
-        return el.classList.contains(styles.candidates);
+        return (
+          el.classList.contains(styles.candidates)
+        );
       },
     });
 
+    drake.on("drag", (el) => {
+      isDragging = true;
+      el.classList.add("grabbing");
+    });
+
+    drake.on("dragend", (el) => {
+      isDragging = false;
+      el.classList.remove("grabbing");
+      trySave();
+    });
+
     return () => {
+      document.removeEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
       drake.destroy();
     };
   }, []);
@@ -195,6 +221,7 @@ const CreateTierlist = () => {
     console.log(readyRankObject);
     return readyRankObject;
   }
+  
 
   //New Zone
   function makeid(length) {
@@ -212,9 +239,7 @@ const CreateTierlist = () => {
   }
 
   const [upLoadRank, setUpLoadRank] = useState([]);
-
   const [isVisible, setIsVisible] = useState(false);
-
   const [currentText, setCurrentText] = useState("");
   const [currentSpanIndex, setCurrentSpanIndex] = useState("");
   const [currentSpanRow, setCurrentSpanRow] = useState("");
@@ -274,27 +299,26 @@ const CreateTierlist = () => {
 
   function spanColorHandler(e) {
     setHeaderColor(e.target.value);
-    currentColorHeader.style.backgroundColor = headerColor;
+    currentColorHeader.style.backgroundColor = e.target.value;
   }
   function textColorHandler(e) {
     setTextColor(e.target.value);
-    currentColorText.style.color = textColor;
+    currentColorText.style.color = e.target.value;
   }
 
   useEffect(() => {
     const savedCreateTierlist = sessionStorage.getItem("storageCreateTierlist");
     if (savedCreateTierlist) {
       const parsedTierlist = JSON.parse(savedCreateTierlist);
-  
-      console.log("Parsed tier list:", parsedTierlist); // ตรวจสอบโครงสร้างข้อมูล
-  
+
+      console.log("Parsed tier list:", parsedTierlist);
+
       setCurrentTierList((prev) => ({
         ...prev,
         all_ranks: parsedTierlist.all_ranks,
       }));
     }
   }, []);
-  
 
   useEffect(() => {
     if (resetCount == 0) {
@@ -311,7 +335,6 @@ const CreateTierlist = () => {
 
   //TODO resetHandler
   const [resetCount, setResetCount] = useState(0);
-  const [resetValue, setResetValue] = useState("Reset");
 
   function resetTierlistHandler() {
     setResetCount((prev) => prev + 1);
@@ -319,17 +342,26 @@ const CreateTierlist = () => {
     if (resetCount > 0) {
       sessionStorage.removeItem("storageCreateTierlist");
       window.location.reload();
-    } else {
-      setResetValue(() => "Sure?");
     }
 
-    setTimeout(() => (setResetCount(0), setResetValue(() => "Reset")), 3000);
+    setTimeout(() => setResetCount(0), 3000);
   }
 
   const [PublicName, setPublicName] = useState("");
   const [PublicDescription, setPublicDescription] = useState("");
+  const [uploadedPublicTemplate, setUploadedPublicTemplate] = useState(false);
+  const [uploadPublicTemplateCount, setUploadPublicTemplateCount] = useState(0);
 
   function UploadPublicTemplate() {
+    setUploadPublicTemplateCount((prev) => prev + 1);
+    if (uploadPublicTemplateCount <= 0) {
+      setTimeout(() => {
+        setUploadPublicTemplateCount(0);
+      }, 3000);
+      return;
+    }
+
+    setUploadedPublicTemplate(true);
     if (!PublicName) {
       alert("Please insert name!");
       return;
@@ -374,8 +406,11 @@ const CreateTierlist = () => {
       console.log(...formData);
     });
     axios
-      .post("http://127.0.0.1:4000/addTemplate", formData)
-      .then(() => alert("Upload Completed!"))
+      .post(`${import.meta.env.VITE_NETWORK_URL}/addTemplate`, formData)
+      .then(() => {
+        alert("Upload Completed!");
+        window.location.reload();
+      })
       .catch((error) => {
         console.error("Error adding template:", error);
       });
@@ -562,7 +597,7 @@ const CreateTierlist = () => {
                 className={styles.resetButton}
                 onClick={() => resetTierlistHandler()}
               >
-                {resetValue}
+                {resetCount <= 0 ? "Reset" : "Sure?"}
               </button>
             </div>
           </div>
@@ -590,6 +625,7 @@ const CreateTierlist = () => {
         </div>
       </div>
       <div className={styles.IOContainer}>
+        
         <div {...getRootProps()} className={styles.uploaderContainer}>
           <input {...getInputProps()} className={styles.uploader} />
           {isDragActive ? (
@@ -604,7 +640,7 @@ const CreateTierlist = () => {
           className={styles.createPublicTemplateButton}
           onClick={() => UploadPublicTemplate()}
         >
-          Create Public Template!
+          {uploadPublicTemplateCount <= 0 ? "Upload to Public" : "Sure?"}
         </button>
       </div>
     </>

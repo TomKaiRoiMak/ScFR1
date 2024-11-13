@@ -6,7 +6,6 @@ import Logo from "../assets/SKR-Logo.png";
 function AllPages() {
   return (
     <>
-      <style>{`body{background-color: #fae8e8;}`}</style>
       <div className={styles.Top}>
         <a href="https://sakolraj.ac.th">
           <img src={Logo} className={styles.logoImage} alt="Logo" />
